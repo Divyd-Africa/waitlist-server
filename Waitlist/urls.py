@@ -20,5 +20,6 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('/waitlist', include('waiting.urls')),  # Make waiting app the root
+    path('', RedirectView.as_view(url='/waitlist/join')),
+    path('waitlist/', include('waiting.urls')),  # Make waiting app the root
 ]
