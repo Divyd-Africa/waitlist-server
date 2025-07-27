@@ -22,3 +22,8 @@ class WaitlistView(APIView):
                 "message": "You have joined the waitlist",
                 "data":WaitingSerializer(waitlist).data
             })
+
+    def get(self, request):
+        return Response({
+            "message": "You have reached the waitlist server. Now I believe this route is none of your business. Bye😘",
+        })
