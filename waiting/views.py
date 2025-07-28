@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from .models import *
 from waiting.serializers import WaitingSerializer
 from django.core.validators import validate_email
-
+import threading
 
 # Create your views here.
 
@@ -30,7 +30,10 @@ class WaitlistView(APIView):
             })
         except Waitlist.DoesNotExist:
             waitlist = Waitlist.objects.create(name=full_name, email=email)
-            send_confirmation_email(full_name, email)
+            threading.Thread(
+                target= send_confirmation_email,
+                args = (full_name,email)
+            ).start()
             return Response({
                 "message": "You have joined the waitlist",
                 "data":WaitingSerializer(waitlist).data
@@ -43,10 +46,13 @@ class WaitlistView(APIView):
 
 
 def send_confirmation_email(name, email):
-    subject = "🎉 You are on the waitlist for divyd africa!!"
-    from_email = settings.DEFAULT_FROM_EMAIL
-    to = [email]
-    html_content = render_to_string("waiting/email_template.html", {"name":name})
-    email_message = EmailMultiAlternatives(subject, "", from_email, to)
-    email_message.attach_alternative(html_content, "text/html")
-    email_message.send(fail_silently=False)
+    try:
+        subject = "🎉 You are on the waitlist for divyd africa!!"
+        from_email = settings.DEFAULT_FROM_EMAIL
+        to = [email]
+        html_content = render_to_string("waiting/email_template.html", {"name":name})
+        email_message = EmailMultiAlternatives(subject, "", from_email, to)
+        email_message.attach_alternative(html_content, "text/html")
+        email_message.send(fail_silently=False)
+    except Exception as e:
+        print(f"failed to send email to {email}. Error:{e}")
