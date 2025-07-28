@@ -6,3 +6,4 @@ class WaitingSerializer(serializers.ModelSerializer):
         model = Waitlist
         fields = '__all__'
 
+
