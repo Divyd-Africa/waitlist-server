@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>{{ subject }}</title>
+  <style>
+    body {
+      font-family: 'Roboto Condensed', sans-serif;
+      background-color: #ffffff;
+      color: #000000;
+      padding: 20px;
+    }
+    .container {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 30px;
+      max-width: 600px;
+      margin: auto;
+      background-color: #fff;
+    }
+    .header {
+      text-align: center;
+      color: #FF5400;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+    .message {
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 14px;
+      text-align: center;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">Hi {{ name }} 👋</div>
+    <div class="message">
+      {{ body }}
+    </div>
+    <div class="footer">
+      — Divyd Africa Team
+    </div>
+  </div>
+</body>
+</html>

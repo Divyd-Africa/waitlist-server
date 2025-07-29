@@ -1,5 +1,6 @@
+import time
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, get_connection
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
@@ -32,7 +33,8 @@ class WaitlistView(APIView):
             waitlist = Waitlist.objects.create(name=full_name, email=email)
             threading.Thread(
                 target= send_confirmation_email,
-                args = (full_name,email)
+                args = (full_name,email),
+                daemon = True,
             ).start()
             return Response({
                 "message": "You have joined the waitlist",
@@ -42,6 +44,17 @@ class WaitlistView(APIView):
     def get(self, request):
         return Response({
             "message": "You have reached the waitlist server. Now I believe this route is none of your business. Bye😘",
+        })
+
+class BroadcastView(APIView):
+    def post(self, request):
+        subject = request.data.get('subject')
+        message = request.data.get('message')
+        if not subject or not message:
+            return Response({'error': 'Please provide subject and message'}, status=400)
+        broadcast_email(subject, message)
+        return Response({
+            "message": "Thread has begun execution, mails are being sent. 👍🏾"
         })
 
 
@@ -56,3 +69,30 @@ def send_confirmation_email(name, email):
         email_message.send(fail_silently=False)
     except Exception as e:
         print(f"failed to send email to {email}. Error:{e}")
+
+def broadcast_email(subject, body):
+    def _broadcast():
+        from_email = settings.DEFAULT_FROM_EMAIL
+        waitlist = Waitlist.objects.all()
+
+        for user in waitlist:
+            try:
+                print(f"sending to {user.email}")
+                connection = get_connection()
+                connection.open()
+                context = {
+                    "name": user.name,
+                    "body": body
+                }
+                html_content = render_to_string("waiting/broadcast_template.html", context)
+                msg = EmailMultiAlternatives(subject, "", from_email, [user.email], connection=connection)
+                msg.attach_alternative(html_content, "text/html")
+                msg.send(fail_silently=False)
+
+                time.sleep(4)
+            except Exception as e:
+                print(f"Failed to send email to {user.email}. Error: {e}")
+        connection.close()
+    threading.Thread(target=_broadcast, daemon=True).start()
+
+
